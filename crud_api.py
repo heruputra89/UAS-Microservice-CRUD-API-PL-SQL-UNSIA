@@ -116,12 +116,22 @@ def handle_data():
         elif request.method == 'PUT':
             data_id = request.json['id']
             updated_data = request.json['data']
-            encrypted_data = encrypt(updated_data['encrypted_data'])
-
-            cursor.execute("UPDATE public.users SET encrypted_data = %s WHERE id = %s;", (encrypted_data['ciphertext'], data_id))
+            
+            # Konversi objek JSON menjadi string sebelum mengenkripsi
+            updated_data_str = json.dumps(updated_data)
+            
+            # Enkripsi data yang diperbarui
+            encrypted_data = encrypt(updated_data_str)
+            
+            # Ambil ciphertext dari hasil enkripsi
+            ciphertext = encrypted_data['ciphertext']
+            
+            # Update data di database
+            cursor.execute("UPDATE public.users SET encrypted_data = %s WHERE id = %s;", (ciphertext, data_id))
             connection.commit()
 
             return jsonify({'message': 'Data updated successfully'})
+
 
         elif request.method == 'DELETE':
             data_id = request.json['id']
